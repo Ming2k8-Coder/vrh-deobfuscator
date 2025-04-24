@@ -242,7 +242,7 @@ class Deobfuscator {
 
 const makeSafeFilename = (name) => {
 	return name.replace(/[<>:"\/\\|?*\u0000-\u001F]/g, (x) => {
-		return '_x'+('0'+x.charCodeAt(0).toString(16)).substr(-2)+'_';
+		return '_x' + ('0' + x.charCodeAt(0).toString(16)).substr(-2) + '_';
 	});
 }
 
@@ -251,10 +251,10 @@ const writeTexture = async (texture, suffix, buffer, ext) => {
 	const match = name.match(/^data:.*?\bbase64,(.+)(.)$/);
 	if (match) {
 		const data = Buffer.from(match[1], "base64");
-		name = crypto.createHash("md5").update(data).digest("hex")+"_"+match[2];
+		name = crypto.createHash("md5").update(data).digest("hex") + "_" + match[2];
 		await writeFile(`./debug/${name}.${suffix}.base64.png`, data);
 	}
-	await writeFile(`./debug/${makeSafeFilename(name)}.${suffix}.${ext||"png"}`, buffer);
+	await writeFile(`./debug/${makeSafeFilename(name)}.${suffix}.${ext || "png"}`, buffer);
 }
 
 const VRM_EXTENSION_NAME = "VRM";
@@ -538,7 +538,7 @@ export class PIXIVBasisExtension extends Extension {
 		return this;
 	}
 
-	read() {}
+	read() { }
 	write() {
 		throw "This extension must be removed prior to writing.";
 	}
@@ -549,7 +549,8 @@ async function deobfuscateVRoidHubGLB(id) {
 
 	let vrmData = null;
 	let seedMap = null;
-
+	let charname = await getClassContentFromURL(target)
+	charname=charname.replace(/[:\/\\]/g,'');
 	if (existsSync("./debug") === true) {
 		console.log("Cleaning up debug folder...");
 		const files = await readdir("./debug");
@@ -759,7 +760,7 @@ async function deobfuscateVRoidHubGLB(id) {
 
 	io.setVertexLayout(VertexLayout.SEPARATE);
 	const outputGLB = await io.writeBinary(doc);
-	writeFile(`./${id}.deob.vrm`, outputGLB);
+	writeFile(`./[${id}].${charname}.deobf.vrm`, outputGLB);
 
 	console.log(
 		`Deobfuscation process for VRoid Hub GLB with ID: ${id} completed.`,
@@ -770,9 +771,63 @@ async function deobfuscateVRoidHubGLB(id) {
 const parseVRoidHubURL = (url) =>
 	url.replace(/\/+$/, "").split("/").slice(-1)[0];
 
+//ai gengen
+import axios from "axios";
+import * as cheerio from "cheerio";
+
+/**
+ * Fetches and extracts the content of elements with a specific class name from a given URL.
+ * @param {string} url - The URL to fetch the HTML content from.
+ * @param {string} className - The class name of the elements to extract content from.
+ * @returns {Promise<string[]>} - A promise that resolves to an array of content strings.
+ */
+export const getClassContentFromURL = async (url, className) => {
+    try {
+        // Fetch the HTML content of the URL
+        const { data: html } = await axios.get(url, {responseType: 'document'});
+        // Load the HTML into cheerio
+		// let start = "sc-d72b35f1-6 gGnxxh";
+		// let end = "sc-d72b35f1-8 jHwUFH";
+		// let startpos = html.search(start) + start.length + 3; 
+		// let endpos = html.search(end) -12;
+		// let htmltrimed = html.slice(startpos,endpos);
+		// console.log(htmltrimed);
+		// const $ = cheerio.load(htmltrimed);
+		const $ = cheerio.load(html);
+		// Extract the content of elements with the specified class name
+		const charname_elem = $('.sc-d72b35f1-3');
+		const CharNameContent = charname_elem.text();
+		const charvar_elem = $('.sc-d72b35f1-7');
+		const CharVariationContent = charvar_elem.text();
+		let finalcontent = CharNameContent + "--" + CharVariationContent;
+		console.log("You are going to download:",finalcontent);
+
+		const char3rdparty = $('.sc-d4545520-16');
+		const Char3rdPartyContent = char3rdparty.text();
+		const char3rdpartyallowdownload = $('.sc-d4545520-17');
+		const Char3rdPartyAllowDownloadContent = char3rdpartyallowdownload.text();
+		if (Char3rdPartyContent == "NG") {
+			console.log("This character is view only. Using optimized model method....");
+		}else {
+			if (Char3rdPartyAllowDownloadContent == '(ダウンロードはNG)') {
+				console.log("This character is not allowed to be downloaded by website.Recommend using game method... ");
+				throw new Error('Character is accessable using other methods');
+			} else {
+				console.log("This character is allowed to be downloaded by website. Go to website to download it!");
+				throw new Error('Character is accessable using other methods');
+			}
+		}
+		return finalcontent;
+    } catch (error) {
+        console.error('Error fetching or parsing the URL:', error);
+        return [];
+    }
+};
+
+
+
 const target = process.argv.slice(-1)[0];
 if (!target.startsWith("https://") && Number.isNaN(Number.parseInt(target))) {
 	throw new Error("That's not a valid VRoid Hub URL.");
 }
-
 deobfuscateVRoidHubGLB(parseVRoidHubURL(target));
