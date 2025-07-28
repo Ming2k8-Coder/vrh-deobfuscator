@@ -1,6 +1,5 @@
 ### VRM ###
-.vrm
-
+*.vrm
 ### macOS ###
 # General
 .DS_Store
