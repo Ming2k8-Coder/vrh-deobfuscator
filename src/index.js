@@ -848,13 +848,15 @@ export const getClassContentFromURL = async (url, className) => {
         });
         const $ = cheerio.load(html);
         //console.log(html);
-	    writeFile('./FUCK.html.txt', html)
+	    //writeFile('./FUCK.html.txt', html)
         // Extract the content of elements with the specified class name
-        const charname_elem = $('.sc-94072a1-3');
+        const charname_elem = $('.sc-b2676ded-3');
         const CharNameContent = charname_elem.text();
-        const charvar_elem = $('.sc-94072a1-7');
+        const charvar_elem = $('.sc-b2676ded-7');
         const CharVariationContent = charvar_elem.text();
-        let finalcontent = CharNameContent + "--" + CharVariationContent;
+        const author_elem = $('.sc-b2676ded-5');
+        const AuthorContent =  author_elem.text();
+        let finalcontent = CharNameContent + "_" + CharVariationContent + "--" + AuthorContent;
         console.log("You are going to download:", finalcontent);
         const char3rdparty = $('.sc-36e1e351-16');
         const Char3rdPartyContent = char3rdparty.text();

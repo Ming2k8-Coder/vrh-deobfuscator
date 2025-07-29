@@ -1,6 +1,6 @@
 import subprocess
 from bs4 import BeautifulSoup
-with open("Artistneeddown.txt") as f:
+with open("Artistneeddown.txt",encoding="utf8") as f:
     html_code = f.read()
 # Parse the HTML code with BeautifulSoup
 soup = BeautifulSoup(html_code, 'html.parser')
@@ -26,5 +26,6 @@ for href in hrefs:
     ff.write(link + "\n")
     num += 1
 print("Total model number:" + str(num))
+ff.close()
 input("Press any key to download all, terminate to not download. Writed to file")
 subprocess.call(['python', 'nodewraper.py'])

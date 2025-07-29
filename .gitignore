@@ -1,6 +1,9 @@
 ### VRM ###
 *.vrm
+*.ini
+*.txt
 ### macOS ###
+.vscode
 # General
 .DS_Store
 .AppleDouble
@@ -177,3 +180,5 @@ dist
 *.deob.vrm
 cache
 debug
+Artistneeddown.txt
+Needdownload.txt
